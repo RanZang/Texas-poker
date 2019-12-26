@@ -38,6 +38,7 @@ def check_input(input1, input2=""):
             return False
     return True
 
+
 def check_hands(cards):
     '''
     judge the type of the hand and return the type name and the highest number of the cards
@@ -183,6 +184,7 @@ def check_hands(cards):
     else:
         return [0, card_numbers[-1]]
 
+
 def if_p1_win(p1, p2):
     '''
 
@@ -215,6 +217,147 @@ def if_p1_win(p1, p2):
             return 2
 
 
+def random_pick(A0, A1, B0, B1):
+    '''
+    random pick 10000 hands card and calculate the win rate
+    :param A0: card - P1 first
+    :param A1: card - P1 second
+    :param B0: card - P2 first
+    :param B1: card - P2 second
+    :return: None
+    '''
+    p1_win_times = 0
+    p2_win_times = 0
+    draw_times = 0
+
+    for j in range(1000):
+
+        tables = []
+        all_cards = [A0, A1, B0, B1]
+
+        # table_output = "The cards on table: "
+        while len(tables) != 5:
+            newcard = card(0, 0, random.randint(0, 51))
+            if newcard not in all_cards:
+                tables.append(newcard)
+                # table_output += str(newcard) + " "
+                all_cards.append(newcard)
+        # print(table_output)
+
+        P1_final = tables[:]
+
+        for i in range(6):
+            for j in range(i + 1, 7):
+                temp = tables[:] + [A0, A1]
+                del temp[j]
+                del temp[i]
+                if if_p1_win(P1_final, temp) == 0:
+                    P1_final = temp[:]
+
+        P2_final = tables[:]
+
+        for i in range(6):
+            for j in range(i + 1, 7):
+                temp = tables[:] + [B0, B1]
+                del temp[j]
+                del temp[i]
+                if if_p1_win(P2_final, temp) == 0:
+                    P2_final = temp[:]
+
+        # #  the output of the two results
+        # p1_output = "p1: "
+        # for ca in P1_final:
+        #     p1_output += str(ca) + " "
+        # print(p1_output)
+        # result = check_hands(P1_final)
+        # print("the type is " + types[result[0]] + ", and the index of it is " + str(result[1]))
+        #
+        # p2_output = "p2: "
+        # for ca in P2_final:
+        #     p2_output += str(ca) + " "
+        # print(p2_output)
+        # result = check_hands(P2_final)
+        # print("the type is " + types[result[0]] + ", and the index of it is " + str(result[1]))
+
+        if if_p1_win(P1_final, P2_final) == 1:
+            # print("P1 wins")
+            p1_win_times += 1
+        elif if_p1_win(P1_final, P2_final) == 0:
+            # print("P2 wins")
+            p2_win_times += 1
+        else:
+            # print("draw")
+            draw_times += 1
+        # print("-----------------------------")
+    print("P1 win rate: " + str(p1_win_times / 10) + "%")
+    print("P2 win rate: " + str(p2_win_times / 10) + "%")
+    print("Draw rate  : " + str(draw_times / 10) + "%")
+
+def bruce_pick(A0, A1, B0, B1):
+    '''
+    bruce pick all the possible card and calculate the win rate
+    :param A0: card - P1 first
+    :param A1: card - P1 second
+    :param B0: card - P2 first
+    :param B1: card - P2 second
+    :return: None
+    '''
+    p1_win_times = 0
+    p2_win_times = 0
+    draw_times = 0
+    count = 0
+
+    tables = []
+    all_cards = [A0, A1, B0, B1]
+    cards_left = list(range(52))
+    for number in all_cards:
+        cards_left.remove(number.index)
+    for k1 in range(44):
+        for k2 in range(k1+1, 45):
+            for k3 in range(k2+1, 46):
+                for k4 in range(k3+1, 47):
+                    for k5 in range(k4+1, 48):
+                        count += 1
+
+                        tables.append(card(0, 0, k1))
+                        tables.append(card(0, 0, k2))
+                        tables.append(card(0, 0, k3))
+                        tables.append(card(0, 0, k4))
+                        tables.append(card(0, 0, k5))
+
+                        P1_final = tables[:]
+
+                        for i in range(6):
+                            for j in range(i + 1, 7):
+                                temp = tables[:] + [A0, A1]
+                                del temp[j]
+                                del temp[i]
+                                if if_p1_win(P1_final, temp) == 0:
+                                    P1_final = temp[:]
+
+                        P2_final = tables[:]
+
+                        for i in range(6):
+                            for j in range(i + 1, 7):
+                                temp = tables[:] + [B0, B1]
+                                del temp[j]
+                                del temp[i]
+                                if if_p1_win(P2_final, temp) == 0:
+                                    P2_final = temp[:]
+                        if if_p1_win(P1_final, P2_final) == 1:
+                            p1_win_times += 1
+                        elif if_p1_win(P1_final, P2_final) == 0:
+                            p2_win_times += 1
+                        else:
+                            draw_times += 1
+
+    print("P1 win rate: " + str(p1_win_times / count) + "%")
+    print("P2 win rate: " + str(p2_win_times / count) + "%")
+    print("Draw rate  : " + str(draw_times / count) + "%")
+
+
+
+
 def main():
     while True:
         first_hand = input("Input the first hand:")
@@ -239,72 +382,10 @@ def main():
         print("P1: " + str(A0) + " "+str(A1))
         print("P2: " + str(B0) + " "+str(B1))
 
-        p1_win_times = 0
-        p2_win_times = 0
-        draw_times = 0
+        random_pick(A0, A1, B0, B1)
+        # bruce_pick(A0, A1, B0, B1)
 
-        for j in range(10000):
 
-            tables = []
-            all_cards = [A0, A1, B0, B1]
-
-            # table_output = "The cards on table: "
-            while len(tables) != 5:
-                newcard = card(0, 0, random.randint(0, 51))
-                if newcard not in all_cards:
-                    tables.append(newcard)
-                    # table_output += str(newcard) + " "
-                    all_cards.append(newcard)
-            # print(table_output)
-
-            P1_final = tables[:]
-
-            for i in range(6):
-                for j in range(i+1, 7):
-                    temp = tables[:] + [A0, A1]
-                    del temp[j]
-                    del temp[i]
-                    if if_p1_win(P1_final, temp) == 0:
-                        P1_final = temp[:]
-
-            P2_final = tables[:]
-
-            for i in range(6):
-                for j in range(i+1, 7):
-                    temp = tables[:] + [B0, B1]
-                    del temp[j]
-                    del temp[i]
-                    if if_p1_win(P2_final, temp) == 0:
-                        P2_final = temp[:]
-
-            # #  the output of the two results
-            # p1_output = "p1: "
-            # for ca in P1_final:
-            #     p1_output += str(ca) + " "
-            # print(p1_output)
-            # result = check_hands(P1_final)
-            # print("the type is " + types[result[0]] + ", and the index of it is " + str(result[1]))
-            #
-            # p2_output = "p2: "
-            # for ca in P2_final:
-            #     p2_output += str(ca) + " "
-            # print(p2_output)
-            # result = check_hands(P2_final)
-            # print("the type is " + types[result[0]] + ", and the index of it is " + str(result[1]))
-
-            if if_p1_win(P1_final, P2_final) == 1:
-                #print("P1 wins")
-                p1_win_times += 1
-            elif if_p1_win(P1_final, P2_final) == 0:
-                #print("P2 wins")
-                p2_win_times += 1
-            else:
-                #print("draw")
-                draw_times += 1
-            # print("-----------------------------")
-        print("P1 win rate: " + str(p1_win_times/100) + "%")
-        print("P2 win rate: " + str(p2_win_times/100) + "%")
-        print("Draw rate  : " + str(draw_times/100) + "%")
 
 
     sys.exit(0)
