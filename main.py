@@ -1,5 +1,6 @@
 import sys
 import random
+import re
 
 from card import card
 
@@ -10,18 +11,32 @@ types = {0: "high card", 1: "a pair", 2: "two pairs", 3: "three of a kind", 4: "
 
 def check_input(input1, input2=""):
     """
-    :param input1: card
-    :param input2: card
+    :param input1: string
+    :param input2: string
     :return:
     """
-    if len(input1) != 4:
-        sys.stderr.write("Error: Input elements number is not 4 but "+str(len(input1)))
+    if not re.match(r'[0-3] [0-9]+ [0-3] [0-9]+', input1):
+        sys.stderr.write("Error: wrong input of P1\n")
         return False
-    elif input1[0] == input1[2] and input1[1] == input1[3]:
-        sys.stderr.write("Error: Duplicate cards in hand")
+    if input2:
+        if not re.match(r'[0-3] [0-9]+ [0-3] [0-9]+', input2):
+            sys.stderr.write("Error: wrong input of P2\n")
+            return False
+    handpool = []
+    p1numbers = input1.split(" ")
+    handpool.append((p1numbers[0], p1numbers[1]))
+    handpool.append((p1numbers[2], p1numbers[3]))
+    if len(set(handpool)) < 2:
+        sys.stderr.write("Error: Duplicate card in P1 hand\n")
         return False
-    elif not input2:
-        return True
+    if input2:
+        p2numbers = input2.split(" ")
+        handpool.append((p2numbers[0], p2numbers[1]))
+        handpool.append((p2numbers[2], p2numbers[3]))
+        if len(set(handpool)) < 4:
+            sys.stderr.write("Error: Duplicate card\n")
+            return False
+    return True
 
 def check_hands(cards):
     '''
@@ -201,88 +216,95 @@ def if_p1_win(p1, p2):
 
 
 def main():
-    # while True:
-    #     inputs = input("cards?")
-    #     cards = []
-    #     if not inputs:
-    #         break
-    #
-    #     hand_output = "the cards are:"
-    #     temp = inputs.split(" ")
-    #     for i in temp:
-    #         cards.append(card(0,0,int(i)))
-    #         hand_output += str(cards[-1])+" "
-    #     print(hand_output)
-    #     result = check_hands(cards)
-    #     print("the type is " + types[result[0]] + ", and the index of it is " + str(result[1]))
-    #
+    while True:
+        first_hand = input("Input the first hand:")
+        if first_hand == ' ':
+            break
+        if not check_input(first_hand):
+            continue
 
-    first_hand = input("Input the first hand:")
-    first_hand = first_hand.split(" ")
-    A0 = card(int(first_hand[0]), int(first_hand[1]))
-    A1 = card(int(first_hand[2]), int(first_hand[3]))
-    second_hand = input("Input the second hand:")
-    second_hand = second_hand.split(" ")
-    B0 = card(int(second_hand[0]), int(second_hand[1]))
-    B1 = card(int(second_hand[2]), int(second_hand[3]))
-    print("P1: " + str(A0) + " "+str(A1))
-    print("P2: " + str(B0) + " "+str(B1))
+        second_hand = input("Input the second hand:")
+        if first_hand == ' ':
+            break
+        if not check_input(first_hand, second_hand):
+            continue
 
-    for j in range(10):
+        first_hand = first_hand.split(" ")
+        A0 = card(int(first_hand[0]), int(first_hand[1]))
+        A1 = card(int(first_hand[2]), int(first_hand[3]))
 
-        tables = []
-        all_cards = [A0, A1, B0, B1]
+        second_hand = second_hand.split(" ")
+        B0 = card(int(second_hand[0]), int(second_hand[1]))
+        B1 = card(int(second_hand[2]), int(second_hand[3]))
+        print("P1: " + str(A0) + " "+str(A1))
+        print("P2: " + str(B0) + " "+str(B1))
 
-        table_output = "The cards on table: "
-        while len(tables) != 5:
-            newcard = card(0, 0, random.randint(0, 51))
-            if newcard not in all_cards:
-                tables.append(newcard)
-                table_output += str(newcard) + " "
-                all_cards.append(newcard)
-        print(table_output)
+        p1_win_times = 0
+        p2_win_times = 0
+        draw_times = 0
 
-        P1_final = tables[:]
+        for j in range(10000):
 
-        for i in range(6):
-            for j in range(i+1, 7):
-                temp = tables[:] + [A0, A1]
-                del temp[j]
-                del temp[i]
-                if if_p1_win(P1_final, temp) == 0:
-                    P1_final = temp[:]
+            tables = []
+            all_cards = [A0, A1, B0, B1]
 
-        P2_final = tables[:]
+            # table_output = "The cards on table: "
+            while len(tables) != 5:
+                newcard = card(0, 0, random.randint(0, 51))
+                if newcard not in all_cards:
+                    tables.append(newcard)
+                    # table_output += str(newcard) + " "
+                    all_cards.append(newcard)
+            # print(table_output)
 
-        for i in range(6):
-            for j in range(i+1, 7):
-                temp = tables[:] + [B0, B1]
-                del temp[j]
-                del temp[i]
-                if if_p1_win(P2_final, temp) == 0:
-                    P2_final = temp[:]
+            P1_final = tables[:]
 
-        p1_output = "p1: "
-        for ca in P1_final:
-            p1_output += str(ca) + " "
-        print(p1_output)
-        result = check_hands(P1_final)
-        print("the type is " + types[result[0]] + ", and the index of it is " + str(result[1]))
+            for i in range(6):
+                for j in range(i+1, 7):
+                    temp = tables[:] + [A0, A1]
+                    del temp[j]
+                    del temp[i]
+                    if if_p1_win(P1_final, temp) == 0:
+                        P1_final = temp[:]
 
-        p2_output = "p2: "
-        for ca in P2_final:
-            p2_output += str(ca) + " "
-        print(p2_output)
-        result = check_hands(P2_final)
-        print("the type is " + types[result[0]] + ", and the index of it is " + str(result[1]))
+            P2_final = tables[:]
 
-        if if_p1_win(P1_final, P2_final) == 1:
-            print("P1 wins")
-        elif if_p1_win(P1_final, P2_final) == 0:
-            print("P2 wins")
-        else:
-            print("draw")
-        print("-----------------------------")
+            for i in range(6):
+                for j in range(i+1, 7):
+                    temp = tables[:] + [B0, B1]
+                    del temp[j]
+                    del temp[i]
+                    if if_p1_win(P2_final, temp) == 0:
+                        P2_final = temp[:]
+
+            # #  the output of the two results
+            # p1_output = "p1: "
+            # for ca in P1_final:
+            #     p1_output += str(ca) + " "
+            # print(p1_output)
+            # result = check_hands(P1_final)
+            # print("the type is " + types[result[0]] + ", and the index of it is " + str(result[1]))
+            #
+            # p2_output = "p2: "
+            # for ca in P2_final:
+            #     p2_output += str(ca) + " "
+            # print(p2_output)
+            # result = check_hands(P2_final)
+            # print("the type is " + types[result[0]] + ", and the index of it is " + str(result[1]))
+
+            if if_p1_win(P1_final, P2_final) == 1:
+                #print("P1 wins")
+                p1_win_times += 1
+            elif if_p1_win(P1_final, P2_final) == 0:
+                #print("P2 wins")
+                p2_win_times += 1
+            else:
+                #print("draw")
+                draw_times += 1
+            # print("-----------------------------")
+        print("P1 win rate: " + str(p1_win_times/100) + "%")
+        print("P2 win rate: " + str(p2_win_times/100) + "%")
+        print("Draw rate  : " + str(draw_times/100) + "%")
 
 
     sys.exit(0)
