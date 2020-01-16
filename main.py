@@ -24,6 +24,9 @@ def check_input(input1, input2=""):
             return False
     handpool = []
     p1numbers = input1.split(" ")
+    if int(p1numbers[1]) > 13 or int(p1numbers[3]) > 13:
+        sys.stderr.write("Error: No such card\n")
+        return False
     handpool.append((p1numbers[0], p1numbers[1]))
     handpool.append((p1numbers[2], p1numbers[3]))
     if len(set(handpool)) < 2:
@@ -31,6 +34,9 @@ def check_input(input1, input2=""):
         return False
     if input2:
         p2numbers = input2.split(" ")
+        if int(p2numbers[1]) > 13 or int(p2numbers[3]) > 13:
+            sys.stderr.write("Error: No such card\n")
+            return False
         handpool.append((p2numbers[0], p2numbers[1]))
         handpool.append((p2numbers[2], p2numbers[3]))
         if len(set(handpool)) < 4:
@@ -293,6 +299,95 @@ def random_pick(A0, A1, B0, B1):
     print("P2 win rate: " + str(p2_win_times / 10) + "%")
     print("Draw rate  : " + str(draw_times / 10) + "%")
 
+def test_case_random_pick():
+    '''
+    random pick 10000 hands card and calculate the win rate
+    :param A0: card - P1 first
+    :param A1: card - P1 second
+    :param B0: card - P2 first
+    :param B1: card - P2 second
+    :return: None
+    '''
+    p1_win_times = 0
+    p2_win_times = 0
+    draw_times = 0
+    A0 = card(0,2)
+    A1 = card(1,7)
+    count = 0
+    while count < 10000:
+
+        B0 = card(random.randint(0,3),random.randint(1,13))
+        B1 = card(random.randint(0,3),random.randint(1,13))
+        #B0 = card(0,13)
+        #B1 = card(1,13)
+        all_cards = [A0,A1]
+        if B0 in all_cards or B1 in all_cards or B0.index == B1.index:
+            continue
+        tables = []
+        all_cards.append(B0)
+        all_cards.append(B1)
+        # print("P1: " + str(A0) + " " + str(A1))
+        # print("P2: " + str(B0) + " "+str(B1))
+        # table_output = "The cards on table: "
+        while len(tables) != 5:
+            newcard = card(0, 0, random.randint(0, 51))
+            if newcard not in all_cards:
+                tables.append(newcard)
+                # table_output += str(newcard) + " "
+                all_cards.append(newcard)
+        # print(table_output)
+
+        P1_final = tables[:]
+
+        for i in range(6):
+            for j in range(i + 1, 7):
+                temp = tables[:] + [A0, A1]
+                del temp[j]
+                del temp[i]
+                if if_p1_win(P1_final, temp) == 0:
+                    P1_final = temp[:]
+
+        P2_final = tables[:]
+
+        for i in range(6):
+            for j in range(i + 1, 7):
+                temp = tables[:] + [B0, B1]
+                del temp[j]
+                del temp[i]
+                if if_p1_win(P2_final, temp) == 0:
+                    P2_final = temp[:]
+
+        # #  the output of the two results
+        # p1_output = "p1: "
+        # for ca in P1_final:
+        #     p1_output += str(ca) + " "
+        # print(p1_output)
+        # result = check_hands(P1_final)
+        # print("the type is " + types[result[0]] + ", and the index of it is " + str(result[1]))
+        #
+        # p2_output = "p2: "
+        # for ca in P2_final:
+        #     p2_output += str(ca) + " "
+        # print(p2_output)
+        # result = check_hands(P2_final)
+        # print("the type is " + types[result[0]] + ", and the index of it is " + str(result[1]))
+
+        if if_p1_win(P1_final, P2_final) == 1:
+            # print("P1 wins")
+            p1_win_times += 1
+        elif if_p1_win(P1_final, P2_final) == 0:
+            # print("P2 wins")
+            p2_win_times += 1
+        else:
+            # print("draw")
+            draw_times += 1
+        # print("-----------------------------")
+        count+=1
+    print("P1 win rate: " + str(p1_win_times / 100) + "%")
+    print("P2 win rate: " + str(p2_win_times / 100) + "%")
+    print("Draw rate  : " + str(draw_times / 100) + "%")
+
+
 def bruce_pick(A0, A1, B0, B1):
     '''
     bruce pick all the possible card and calculate the win rate
@@ -359,33 +454,33 @@ def bruce_pick(A0, A1, B0, B1):
 
 
 def main():
-    while True:
-        first_hand = input("Input the first hand:")
-        if first_hand == ' ':
-            break
-        if not check_input(first_hand):
-            continue
-
-        second_hand = input("Input the second hand:")
-        if first_hand == ' ':
-            break
-        if not check_input(first_hand, second_hand):
-            continue
-
-        first_hand = first_hand.split(" ")
-        A0 = card(int(first_hand[0]), int(first_hand[1]))
-        A1 = card(int(first_hand[2]), int(first_hand[3]))
-
-        second_hand = second_hand.split(" ")
-        B0 = card(int(second_hand[0]), int(second_hand[1]))
-        B1 = card(int(second_hand[2]), int(second_hand[3]))
-        print("P1: " + str(A0) + " "+str(A1))
-        print("P2: " + str(B0) + " "+str(B1))
-
-        random_pick(A0, A1, B0, B1)
+    # while True:
+    #     first_hand = input("Input the first hand:")
+    #     if first_hand == ' ':
+    #         break
+    #     if not check_input(first_hand):
+    #         continue
+    #
+    #     second_hand = input("Input the second hand:")
+    #     if second_hand == ' ':
+    #         break
+    #     if not check_input(first_hand, second_hand):
+    #         continue
+    #
+    #     first_hand = first_hand.split(" ")
+    #     A0 = card(int(first_hand[0]), int(first_hand[1]))
+    #     A1 = card(int(first_hand[2]), int(first_hand[3]))
+    #
+    #     second_hand = second_hand.split(" ")
+    #     B0 = card(int(second_hand[0]), int(second_hand[1]))
+    #     B1 = card(int(second_hand[2]), int(second_hand[3]))
+    #     print("P1: " + str(A0) + " "+str(A1))
+    #     print("P2: " + str(B0) + " "+str(B1))
+    #
+    #     random_pick(A0, A1, B0, B1)
         # bruce_pick(A0, A1, B0, B1)
 
-
+    test_case_random_pick()
 
 
     sys.exit(0)
